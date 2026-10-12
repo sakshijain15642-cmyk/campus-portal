@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+<h4 class="mb-3">Submitted Campus Complaints</h4>
+<table class="table table-bordered bg-white shadow-sm align-middle">
+    <thead class="table-dark">
+        <tr>
+            <th>ID</th>
+            <th>Photo</th>
+            <th>Issue</th>
+            <th>Location</th>
+            <th>Category</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for ticket in tickets %}
+        <tr>
+            <td>#{{ ticket.id }}</td>
+            <td style="width: 80px;">
+                {% if ticket.image_file %}
+                    <a href="{{ url_for('static', filename='uploads/' + ticket.image_file) }}" target="_blank">
+                        <img src="{{ url_for('static', filename='uploads/' + ticket.image_file) }}" class="img-thumbnail" style="max-height: 60px;">
+                    </a>
+                {% else %}
+                    <span class="text-muted small">No Image</span>
+                {% endif %}
+            </td>
+            <td><strong>{{ ticket.title }}</strong><br><small class="text-muted">{{ ticket.description }}</small></td>
+            <td>{{ ticket.location }}</td>
+            <td>{{ ticket.category }}</td>
+            <td>
+                <span class="badge {% if ticket.status == 'Resolved' %}bg-success{% elif ticket.status == 'In Progress' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
+                    {{ ticket.status }}
+                </span>
+            </td>
+            <td>
+                <a href="/update/{{ ticket.id }}/In Progress" class="btn btn-sm btn-outline-warning">Work</a>
+                <a href="/update/{{ ticket.id }}/Resolved" class="btn btn-sm btn-outline-success">Resolve</a>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
