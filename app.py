@@ -1,15 +1,12 @@
 import os
-import time
+from flask import Flask, request, render_template, redirect, url_for, flash
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
-from flask import Flask, request, render_template, redirect, url_for, flash
 
 app = Flask(__name__)
 
-# 1. Find the exact absolute path to the directory where app.py is stored
+# Absolute Base Directory Path Logic
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-
-# Configure upload path and allowed extensions
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
@@ -19,7 +16,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# Ensure uploads folder exists on server start
+# Ensure static/uploads exists automatically on boot
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 class Ticket(db.Model):
@@ -29,7 +26,7 @@ class Ticket(db.Model):
     category = db.Column(db.String(50), nullable=False)
     description = db.Column(db.Text, nullable=False)
     status = db.Column(db.String(20), default='Pending')
-    image_file = db.Column(db.String(100), nullable=True)  # Store image filename
+    image_file = db.Column(db.String(100), nullable=True)
 
 with app.app_context():
     db.create_all()
@@ -45,24 +42,13 @@ def home():
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
     if request.method == 'POST':
-        title = request.form.get('title')
-        description = request.form.get('description')
         file = request.files.get('image')
 
         filename = None
         if file and file.filename != '':
-            # Clean filename to prevent security vulnerability / path traversal
             filename = secure_filename(file.filename)
-            
-            # Combine the absolute upload path with the secure filename
             save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-            
-            # Save the file directly to the absolute server disk location
             file.save(save_path)
-
-        # Proceed with saving ticket record to DB (storing only filename string)
-        # new_ticket = Ticket(title=title, description=description, image=filename)
-        # db.session.add(new_ticket) ...
 
         new_ticket = Ticket(
             title=request.form['title'],
@@ -80,6 +66,17 @@ def submit():
 def update_status(ticket_id, status):
     ticket = Ticket.query.get_or_404(ticket_id)
     ticket.status = status
+    db.session.commit()
+    return redirect(url_for('home'))
+
+@app.route('/delete/<int:ticket_id>')
+def delete_ticket(ticket_id):
+    ticket = Ticket.query.get_or_404(ticket_id)
+    if ticket.image_file:
+        image_path = os.path.join(app.config['UPLOAD_FOLDER'], ticket.image_file)
+        if os.path.exists(image_path):
+            os.remove(image_path)
+    db.session.delete(ticket)
     db.session.commit()
     return redirect(url_for('home'))
 
