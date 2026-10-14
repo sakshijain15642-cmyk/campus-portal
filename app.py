@@ -76,7 +76,7 @@ def submit():
         return redirect(url_for('home'))
     return render_template('submit.html')
 
-@app.route('/update/<int:id>/<string:status>')
+@app.route('/update/<int:ticket_id>/<string:status>')
 def update_status(ticket_id, status):
     ticket = Ticket.query.get_or_404(ticket_id)
     ticket.status = status
