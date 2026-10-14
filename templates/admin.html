@@ -1,43 +1,56 @@
 {% extends "base.html" %}
 {% block content %}
-<h4 class="mb-3">Submitted Campus Complaints</h4>
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="fw-bold text-dark"><i class="bi bi-list-stars me-2"></i>Submitted Campus Complaints</h4>
+</div>
+
 <table class="table table-bordered bg-white shadow-sm align-middle">
     <thead class="table-dark">
         <tr>
-            <th>ID</th>
-            <th>Photo</th>
-            <th>Issue</th>
-            <th>Location</th>
-            <th>Category</th>
-            <th>Status</th>
-            <th>Action</th>
+            <th><i class="bi bi-hash me-1"></i>ID</th>
+            <th><i class="bi bi-image me-1"></i>Photo</th>
+            <th><i class="bi bi-exclamation-square me-1"></i>Issue</th>
+            <th><i class="bi bi-geo-alt me-1"></i>Location</th>
+            <th><i class="bi bi-tag me-1"></i>Category</th>
+            <th><i class="bi bi-flag me-1"></i>Status</th>
+            <th><i class="bi bi-tools me-1"></i>Action</th>
         </tr>
     </thead>
     <tbody>
         {% for ticket in tickets %}
         <tr>
-            <td>#{{ ticket.id }}</td>
-            <td style="width: 80px;">
+            <td><strong>#{{ ticket.id }}</strong></td>
+            <td style="width: 80px;" class="text-center">
                 {% if ticket.image_file %}
                     <a href="{{ url_for('static', filename='uploads/' + ticket.image_file) }}" target="_blank">
-                        <img src="{{ url_for('static', filename='uploads/' + ticket.image_file) }}" class="img-thumbnail" style="max-height: 60px;">
+                        <img src="{{ url_for('static', filename='uploads/' + ticket.image_file) }}" class="img-thumbnail shadow-sm" style="max-height: 60px;">
                     </a>
                 {% else %}
-                    <span class="text-muted small">No Image</span>
+                    <span class="text-muted small"><i class="bi bi-camera-slr d-block fs-5 text-secondary"></i>No Image</span>
                 {% endif %}
             </td>
-            <td><strong>{{ ticket.title }}</strong><br><small class="text-muted">{{ ticket.description }}</small></td>
-            <td>{{ ticket.location }}</td>
-            <td>{{ ticket.category }}</td>
             <td>
-                <span class="badge {% if ticket.status == 'Resolved' %}bg-success{% elif ticket.status == 'In Progress' %}bg-warning text-dark{% else %}bg-secondary{% endif %}">
-                    {{ ticket.status }}
-                </span>
+                <strong>{{ ticket.title }}</strong><br>
+                <small class="text-muted">{{ ticket.description }}</small>
             </td>
-            <!-- UPDATED ACTION COLUMN -->
+            <td><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ ticket.location }}</td>
+            <td><span class="badge bg-light text-dark border"><i class="bi bi-folder2 me-1"></i>{{ ticket.category }}</span></td>
             <td>
-                <a href="{{ url_for('update_status', ticket_id=ticket.id, status='In Progress') }}" class="btn btn-sm btn-outline-warning">Work</a>
-                <a href="{{ url_for('update_status', ticket_id=ticket.id, status='Resolved') }}" class="btn btn-sm btn-outline-success">Resolve</a>
+                {% if ticket.status == 'Resolved' %}
+                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Resolved</span>
+                {% elif ticket.status == 'In Progress' %}
+                    <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>In Progress</span>
+                {% else %}
+                    <span class="badge bg-secondary"><i class="bi bi-clock me-1"></i>Pending</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{{ url_for('update_status', ticket_id=ticket.id, status='In Progress') }}" class="btn btn-sm btn-outline-warning">
+                    <i class="bi bi-gear-fill me-1"></i>Work
+                </a>
+                <a href="{{ url_for('update_status', ticket_id=ticket.id, status='Resolved') }}" class="btn btn-sm btn-outline-success">
+                    <i class="bi bi-check-lg me-1"></i>Resolve
+                </a>
             </td>
         </tr>
         {% endfor %}

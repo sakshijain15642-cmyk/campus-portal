@@ -1,18 +1,18 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="card shadow-sm col-md-6 mx-auto p-4">
-    <h4 class="mb-3">Submit Campus Complaint</h4>
+<div class="card shadow-sm col-md-6 mx-auto p-4 border-0 rounded-3">
+    <h4 class="mb-3 fw-bold text-primary"><i class="bi bi-pencil-square me-2"></i>Submit Campus Complaint</h4>
     <form method="POST" enctype="multipart/form-data">
         <div class="mb-3">
-            <label class="form-label">Title</label>
+            <label class="form-label fw-semibold"><i class="bi bi-chat-left-text me-1 text-secondary"></i>Title</label>
             <input type="text" name="title" class="form-control" placeholder="e.g., Broken AC Unit" required>
         </div>
         <div class="mb-3">
-            <label class="form-label">Location / Room No.</label>
+            <label class="form-label fw-semibold"><i class="bi bi-geo-alt me-1 text-secondary"></i>Location / Room No.</label>
             <input type="text" name="location" class="form-control" placeholder="e.g., Lab 402" required>
         </div>
         <div class="mb-3">
-            <label class="form-label">Category</label>
+            <label class="form-label fw-semibold"><i class="bi bi-grid me-1 text-secondary"></i>Category</label>
             <select name="category" class="form-select">
                 <option>Infrastructure</option>
                 <option>Wi-Fi</option>
@@ -21,14 +21,16 @@
             </select>
         </div>
         <div class="mb-3">
-            <label class="form-label">Description</label>
+            <label class="form-label fw-semibold"><i class="bi bi-card-text me-1 text-secondary"></i>Description</label>
             <textarea name="description" class="form-control" rows="3" required></textarea>
         </div>
         <div class="mb-3">
-            <label class="form-label">Attach Photo (Optional)</label>
+            <label class="form-label fw-semibold"><i class="bi bi-paperclip me-1 text-secondary"></i>Attach Photo (Optional)</label>
             <input type="file" name="image" class="form-control" accept="image/*">
         </div>
-        <button type="submit" class="btn btn-primary w-100">Submit Report</button>
+        <button type="submit" class="btn btn-primary w-100 fw-semibold">
+            <i class="bi bi-send-fill me-1"></i>Submit Report
+        </button>
     </form>
 </div>
 {% endblock %}
