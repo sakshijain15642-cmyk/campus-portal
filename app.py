@@ -1,13 +1,16 @@
 import os
 import time
-from flask import Flask, render_template, request, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.utils import secure_filename
+from flask import Flask, request, render_template, redirect, url_for, flash
 
 app = Flask(__name__)
 
+# 1. Find the exact absolute path to the directory where app.py is stored
+BASE_DIR = os.path.abspath(os.path.dirname(__file__))
+
 # Configure upload path and allowed extensions
-UPLOAD_FOLDER = os.path.join('static', 'uploads')
+UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
 
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -17,7 +20,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
 # Ensure uploads folder exists on server start
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -42,16 +45,24 @@ def home():
 @app.route('/submit', methods=['GET', 'POST'])
 def submit():
     if request.method == 'POST':
+        title = request.form.get('title')
+        description = request.form.get('description')
+        file = request.files.get('image')
+
         filename = None
-        
-        # Check if an image file was submitted
-        if 'image' in request.files:
-            file = request.files['image']
-            if file and file.filename != '' and allowed_file(file.filename):
-                # Sanitize filename and prepend timestamp to prevent duplicate name overwrites
-                clean_name = secure_filename(file.filename)
-                filename = f"{int(time.time())}_{clean_name}"
-                file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+        if file and file.filename != '':
+            # Clean filename to prevent security vulnerability / path traversal
+            filename = secure_filename(file.filename)
+            
+            # Combine the absolute upload path with the secure filename
+            save_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            
+            # Save the file directly to the absolute server disk location
+            file.save(save_path)
+
+        # Proceed with saving ticket record to DB (storing only filename string)
+        # new_ticket = Ticket(title=title, description=description, image=filename)
+        # db.session.add(new_ticket) ...
 
         new_ticket = Ticket(
             title=request.form['title'],
