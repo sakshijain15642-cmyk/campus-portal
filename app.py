@@ -5,7 +5,7 @@ from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-# Absolute Base Directory Path Logic
+# Absolute Path Logic for PythonAnywhere & Local Parity
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif'}
@@ -16,7 +16,7 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
 
-# Ensure static/uploads exists automatically on boot
+# Ensure uploads directory exists on server launch
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 class Ticket(db.Model):

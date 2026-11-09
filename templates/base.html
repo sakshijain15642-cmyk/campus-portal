@@ -3,25 +3,69 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- Existing Bootstrap 5 CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
     
-    <!-- ADD THIS BOOTSTRAP ICONS CDN LINK -->
+    <!-- Bootstrap 5 CSS & Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     
     <title>Campus Reporting Portal</title>
+    
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #f4f6f9;
+            color: #2b3445;
+        }
+        /* Feature 4: Micro-interactions & Elevation on Hover */
+        .hover-card {
+            transition: transform 0.25s cubic-bezier(0.165, 0.84, 0.44, 1), box-shadow 0.25s cubic-bezier(0.165, 0.84, 0.44, 1);
+        }
+        .hover-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 0.8rem 1.8rem rgba(0, 0, 0, 0.08) !important;
+        }
+        /* Feature 4: Left Status Accent Strips */
+        .accent-pending { border-left: 5px solid #6c757d !important; }
+        .accent-progress { border-left: 5px solid #ffc107 !important; }
+        .accent-resolved { border-left: 5px solid #198754 !important; }
+        
+        .img-hover-zoom {
+            cursor: pointer;
+            transition: transform 0.3s ease;
+        }
+        .img-hover-zoom:hover {
+            transform: scale(1.04);
+        }
+    </style>
 </head>
-<body class="bg-light">
-    <nav class="navbar navbar-dark bg-dark mb-4 shadow-sm">
+<body>
+    <!-- Feature 1: Dark Top Navigation Bar -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark mb-4 shadow-sm border-bottom border-secondary border-opacity-25">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="/">
-                <i class="bi bi-building me-2"></i>Campus Portal
+            <!-- Branding Icon: Soft yellow building-gear badge -->
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="/">
+                <span class="bg-warning bg-opacity-20 text-warning p-2 rounded-3 me-2 d-inline-flex align-items-center justify-content-center" style="width: 38px; height: 38px;">
+                    <i class="bi bi-building-gear fs-5"></i>
+                </span>
+                Campus Portal
             </a>
-            <a href="/submit" class="btn btn-success btn-sm">
+            <!-- Primary Action: Prominent rounded green button -->
+            <a href="/submit" class="btn btn-success rounded-pill px-3 py-1.5 fw-semibold shadow-sm">
                 <i class="bi bi-plus-circle me-1"></i> Report Issue
             </a>
         </div>
     </nav>
-    <div class="container">{% block content %}{% endblock %}</div>
+    
+    <div class="container pb-5">
+        {% block content %}{% endblock %}
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

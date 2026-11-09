@@ -1,59 +1,233 @@
 {% extends "base.html" %}
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="fw-bold text-dark"><i class="bi bi-list-stars me-2"></i>Submitted Campus Complaints</h4>
+
+<!-- Dashboard Header -->
+<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4 gap-3">
+    <div>
+        <h4 class="fw-bold text-dark mb-1"><i class="bi bi-speedometer2 me-2 text-primary"></i>Campus Complaints Dashboard</h4>
+        <p class="text-muted small mb-0">Monitor, filter, and respond to campus environment reports in real-time.</p>
+    </div>
 </div>
 
-<table class="table table-bordered bg-white shadow-sm align-middle">
-    <thead class="table-dark">
-        <tr>
-            <th><i class="bi bi-hash me-1"></i>ID</th>
-            <th><i class="bi bi-image me-1"></i>Photo</th>
-            <th><i class="bi bi-exclamation-square me-1"></i>Issue</th>
-            <th><i class="bi bi-geo-alt me-1"></i>Location</th>
-            <th><i class="bi bi-tag me-1"></i>Category</th>
-            <th><i class="bi bi-flag me-1"></i>Status</th>
-            <th><i class="bi bi-tools me-1"></i>Action</th>
-        </tr>
-    </thead>
-    <tbody>
-        {% for ticket in tickets %}
-        <tr>
-            <td><strong>#{{ ticket.id }}</strong></td>
-            <td style="width: 80px;" class="text-center">
-                {% if ticket.image_file %}
-                    <a href="{{ url_for('static', filename='uploads/' + ticket.image_file) }}" target="_blank">
-                        <img src="{{ url_for('static', filename='uploads/' + ticket.image_file) }}" class="img-thumbnail shadow-sm" style="max-height: 60px;">
+{% set total_count = tickets|length %}
+{% set pending_count = tickets|selectattr('status', 'equalto', 'Pending')|list|length %}
+{% set progress_count = tickets|selectattr('status', 'equalto', 'In Progress')|list|length %}
+{% set resolved_count = tickets|selectattr('status', 'equalto', 'Resolved')|list|length %}
+
+<!-- Metric Summary Stat Cards (Top Row) -->
+<div class="row g-3 mb-4">
+    <!-- Total Issues -->
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 bg-white p-3">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small fw-semibold d-block">Total Issues</span>
+                    <h3 class="fw-bold mb-0 text-dark">{{ total_count }}</h3>
+                </div>
+                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: #e7f1ff; color: #0d6efd;">
+                    <i class="bi bi-layers-fill fs-5"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending -->
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 bg-white p-3">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small fw-semibold d-block">Pending</span>
+                    <h3 class="fw-bold mb-0 text-secondary">{{ pending_count }}</h3>
+                </div>
+                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: #f0f1f2; color: #6c757d;">
+                    <i class="bi bi-clock-history fs-5"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- In Progress (Fixed Icon) -->
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 bg-white p-3">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small fw-semibold d-block">In Progress</span>
+                    <h3 class="fw-bold mb-0 text-warning">{{ progress_count }}</h3>
+                </div>
+                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: #fff3cd; color: #d97706;">
+                    <i class="bi bi-hourglass-split fs-5"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Resolved -->
+    <div class="col-6 col-md-3">
+        <div class="card border-0 shadow-sm rounded-3 bg-white p-3">
+            <div class="d-flex align-items-center justify-content-between">
+                <div>
+                    <span class="text-muted small fw-semibold d-block">Resolved</span>
+                    <h3 class="fw-bold mb-0 text-success">{{ resolved_count }}</h3>
+                </div>
+                <div class="rounded-circle d-flex align-items-center justify-content-center" style="width: 48px; height: 48px; background-color: #e6f4ea; color: #198754;">
+                    <i class="bi bi-check-circle-fill fs-5"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Interactive Filter Pills -->
+<div class="d-flex align-items-center justify-content-between mb-4">
+    <div class="btn-group btn-group-sm bg-white p-1 rounded-pill shadow-sm border" role="group">
+        <button type="button" class="btn btn-sm rounded-pill fw-semibold filter-btn active btn-primary" onclick="filterTickets('all', this)">
+            <i class="bi bi-layers-fill me-1"></i>All ({{ total_count }})
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill fw-semibold filter-btn text-secondary" onclick="filterTickets('Pending', this)">
+            <i class="bi bi-clock-history me-1"></i>Pending ({{ pending_count }})
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill fw-semibold filter-btn text-secondary" onclick="filterTickets('In Progress', this)">
+            <i class="bi bi-hourglass-split me-1"></i>In Progress ({{ progress_count }})
+        </button>
+        <button type="button" class="btn btn-sm rounded-pill fw-semibold filter-btn text-secondary" onclick="filterTickets('Resolved', this)">
+            <i class="bi bi-check-circle-fill me-1"></i>Resolved ({{ resolved_count }})
+        </button>
+    </div>
+</div>
+
+<!-- Empty State -->
+{% if not tickets %}
+<div class="text-center py-5 bg-white rounded-3 shadow-sm my-4 border">
+    <i class="bi bi-shield-check text-success display-1"></i>
+    <h4 class="fw-bold mt-3">All Clear!</h4>
+    <p class="text-muted">There are currently no active issue reports.</p>
+    <a href="/submit" class="btn btn-primary rounded-pill px-4"><i class="bi bi-plus-lg me-1"></i>Report Issue</a>
+</div>
+{% else %}
+
+<!-- Complaints Grid -->
+<div class="row g-4" id="ticketsGrid">
+    {% for ticket in tickets %}
+    <div class="col-md-6 col-lg-4 ticket-card" data-status="{{ ticket.status }}">
+        <div class="card h-100 shadow-sm border-0 rounded-3 overflow-hidden hover-card 
+            {% if ticket.status == 'Resolved' %}accent-resolved{% elif ticket.status == 'In Progress' %}accent-progress{% else %}accent-pending{% endif %}">
+            
+            <!-- Uniform 180px Image Header with Lightbox Modal Trigger -->
+            {% if ticket.image_file %}
+                <div class="overflow-hidden bg-dark position-relative" style="height: 180px;">
+                    <img src="{{ url_for('static', filename='uploads/' + ticket.image_file) }}" 
+                         class="card-img-top w-100 h-100 object-fit-cover img-hover-zoom" 
+                         alt="Report Photo"
+                         data-bs-toggle="modal" 
+                         data-bs-target="#imageModal" 
+                         data-img-src="{{ url_for('static', filename='uploads/' + ticket.image_file) }}"
+                         data-img-title="{{ ticket.title }}">
+                </div>
+            {% else %}
+                <div class="bg-light text-center py-4 border-bottom text-muted" style="height: 180px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+                    <i class="bi bi-image text-secondary opacity-50 display-6"></i>
+                    <div class="small mt-1 text-secondary">No Proof Image Attached</div>
+                </div>
+            {% endif %}
+
+            <div class="card-body d-flex flex-column p-3.5">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <!-- Category Badge -->
+                    <span class="badge bg-primary bg-opacity-10 text-primary border border-primary border-opacity-10 rounded-pill px-2.5 py-1 fw-semibold">
+                        <i class="bi bi-tag-fill me-1 opacity-75"></i>{{ ticket.category }}
+                    </span>
+                    
+                    <!-- Status Badge -->
+                    {% if ticket.status == 'Resolved' %}
+                        <span class="badge bg-success bg-opacity-10 text-success rounded-pill px-2.5 py-1 fw-semibold">
+                            <i class="bi bi-check-circle-fill me-1"></i>Resolved
+                        </span>
+                    {% elif ticket.status == 'In Progress' %}
+                        <span class="badge bg-warning bg-opacity-20 text-dark rounded-pill px-2.5 py-1 fw-semibold">
+                            <i class="bi bi-hourglass-split me-1 text-warning"></i>In Progress
+                        </span>
+                    {% else %}
+                        <span class="badge bg-secondary bg-opacity-10 text-secondary rounded-pill px-2.5 py-1 fw-semibold">
+                            <i class="bi bi-clock-history me-1"></i>Pending
+                        </span>
+                    {% endif %}
+                </div>
+                
+                <h5 class="card-title fw-bold text-dark mb-1">{{ ticket.title }}</h5>
+                <p class="text-muted small mb-2"><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ ticket.location }}</p>
+                <p class="card-text text-secondary small flex-grow-1">{{ ticket.description }}</p>
+            </div>
+
+            <!-- Admin Action Footer -->
+            <div class="card-footer bg-white border-top-0 d-flex justify-content-between align-items-center pb-3 px-3.5 pt-0">
+                <small class="text-muted fw-semibold">#{{ ticket.id }}</small>
+                <div class="btn-group btn-group-sm">
+                    <a href="{{ url_for('update_status', ticket_id=ticket.id, status='In Progress') }}" class="btn btn-outline-warning">
+                        <i class="bi bi-hourglass-split me-1"></i>Work
                     </a>
-                {% else %}
-                    <span class="text-muted small"><i class="bi bi-camera-slr d-block fs-5 text-secondary"></i>No Image</span>
-                {% endif %}
-            </td>
-            <td>
-                <strong>{{ ticket.title }}</strong><br>
-                <small class="text-muted">{{ ticket.description }}</small>
-            </td>
-            <td><i class="bi bi-geo-alt-fill text-danger me-1"></i>{{ ticket.location }}</td>
-            <td><span class="badge bg-light text-dark border"><i class="bi bi-folder2 me-1"></i>{{ ticket.category }}</span></td>
-            <td>
-                {% if ticket.status == 'Resolved' %}
-                    <span class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Resolved</span>
-                {% elif ticket.status == 'In Progress' %}
-                    <span class="badge bg-warning text-dark"><i class="bi bi-hourglass-split me-1"></i>In Progress</span>
-                {% else %}
-                    <span class="badge bg-secondary"><i class="bi bi-clock me-1"></i>Pending</span>
-                {% endif %}
-            </td>
-            <td>
-                <a href="{{ url_for('update_status', ticket_id=ticket.id, status='In Progress') }}" class="btn btn-sm btn-outline-warning">
-                    <i class="bi bi-gear-fill me-1"></i>Work
-                </a>
-                <a href="{{ url_for('update_status', ticket_id=ticket.id, status='Resolved') }}" class="btn btn-sm btn-outline-success">
-                    <i class="bi bi-check-lg me-1"></i>Resolve
-                </a>
-            </td>
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
+                    <a href="{{ url_for('update_status', ticket_id=ticket.id, status='Resolved') }}" class="btn btn-outline-success">
+                        <i class="bi bi-check-lg me-1"></i>Resolve
+                    </a>
+                    <a href="{{ url_for('delete_ticket', ticket_id=ticket.id) }}" class="btn btn-outline-danger" onclick="return confirm('Delete report #{{ ticket.id }}?');">
+                        <i class="bi bi-trash-fill"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+
+<!-- Lightbox Modal for Image Preview -->
+<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content border-0 bg-transparent">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="modal-title text-white fw-bold" id="modalImageTitle"></h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center p-2">
+                <img id="modalImage" src="" class="img-fluid rounded shadow-lg" style="max-height: 80vh; object-fit: contain;">
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Real-time Status Filter Functionality
+    function filterTickets(status, btn) {
+        document.querySelectorAll('.filter-btn').forEach(b => {
+            b.classList.remove('active', 'btn-primary');
+            b.classList.add('text-secondary');
+        });
+        btn.classList.add('active', 'btn-primary');
+        btn.classList.remove('text-secondary');
+
+        const cards = document.querySelectorAll('.ticket-card');
+        cards.forEach(card => {
+            if (status === 'all' || card.getAttribute('data-status') === status) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    }
+
+    // Dynamic Lightbox Modal Loader via Bootstrap 5 Events
+    const imageModal = document.getElementById('imageModal');
+    if (imageModal) {
+        imageModal.addEventListener('show.bs.modal', function (event) {
+            const trigger = event.relatedTarget;
+            const imgSrc = trigger.getAttribute('data-img-src');
+            const imgTitle = trigger.getAttribute('data-img-title');
+            
+            document.getElementById('modalImage').src = imgSrc;
+            document.getElementById('modalImageTitle').textContent = imgTitle;
+        });
+    }
+</script>
 {% endblock %}
